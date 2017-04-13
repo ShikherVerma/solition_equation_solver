@@ -62,14 +62,14 @@ dt = 1e-4
 t = np.arange(0, 1., dt)
 N_t = t.shape[0]
 
-dx = 0.004
+dx = 0.01
 x = np.arange(0, 1, dx)
 N_x = x.shape[0]
 u = np.zeros([N_t, N_x])
 # uHat = np.zeros([N_t, N_x])
 
 x_c = 0.5
-sigma = 0.025
+sigma = 0.1
 u[0] = np.exp(-(x - x_c)**2 / sigma**2)
 # u[0] = np.sin(np.pi * x)
 
@@ -79,8 +79,10 @@ k    = np.fft.fftfreq(N_x, d=(1 / N_x))
 # k1 = f(t[0], uHat, k)
 # plt.plot(x, k1)
 for t_idx in trange(N_t - 1, leave = False):
-    uHat = np.fft.fft(u[t_idx])
-    u[t_idx + 1] = np.fft.ifft((1j * 2 * np.pi * k * dt + 1) * uHat / (1 - dt * (2 * np.pi * 1j)**3)).real
+    uHat  = np.fft.fft(u[t_idx])
+    uHat2 = np.fft.fft(u[t_idx]**2)
+    
+    u[t_idx + 1] = np.fft.ifft((1j * 2 * np.pi * k * dt * uHat2+ uHat) / (1 - dt * (2 * np.pi * 1j)**3)).real
     #plt.clf()
     if (t_idx % 10 == 0):
         plt.plot(x, u[t_idx])
