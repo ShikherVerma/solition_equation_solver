@@ -58,7 +58,7 @@ plt.rcParams['text.latex.unicode'] = True
     #rhs = dissipation_term - nonlinear_term
     #return rhs
 
-dt = 1e-7
+dt = 1e-5
 t = np.arange(0, 0.08, dt)
 N_t = t.shape[0]
 
