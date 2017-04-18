@@ -37,27 +37,6 @@ plt.rcParams['text.usetex'] = True
 plt.rcParams['text.latex.unicode'] = True
 
 
-# Write code for solving dy_dt using RK4 method
-
-#def func(t, y):
-    #"""
-    #"""
-    #return np.sin(t)
-
-#def y_anal(t):
-    #"""
-    #"""
-    #return -np.cos(t)
-
-#def f(t, uHat, k):
-    #"""
-    #"""
-    #u = np.fft.ifft(uHat)
-    #nonlinear_term = ((2 * np.pi * 1j * k) / 2) * uHat
-    #dissipation_term = (2 * np.pi * 1j)**3 * k * uHat * 1.
-    #rhs = dissipation_term - nonlinear_term
-    #return rhs
-
 dt = 1e-5
 t = np.arange(0, 0.08, dt)
 N_t = t.shape[0]
@@ -80,11 +59,19 @@ energy = [np.trapz(u[0]**2, x, dx)]
 # k1 = f(t[0], uHat, k)
 # plt.plot(x, k1)
 for t_idx in trange(N_t - 1, leave = False):
-    uHat  = np.fft.fft(u[t_idx])
-    uHat2 = np.fft.fft(u[t_idx]**2)
     
-    u[t_idx + 1] = np.fft.ifft((-1j * 1 * np.pi * k * dt * uHat2 + uHat) / (1 - dt * k * 0.1 * (2 * np.pi * 1j)**3)).real
-    #plt.clf()
+    uHat      = np.fft.fft(u[t_idx])
+    uHat2     = np.fft.fft(u[t_idx]**2)
+    uHat_1_2  = (uHat - ((2 * np.pi * 1j / 2) * k * uHat2 * 0.5 * dt)) \
+                 / (1 - 0.5 * dt * (2 * np.pi * 1j)**3 * k)
+    u_1_2     = np.fft.ifft(uHat_1_2)
+    uHat2_1_2 = np.fft.fft(u_1_2**2)
+    
+    u[t_idx + 1] = np.fft.ifft(((-2 * np.pi * 1j * k * uHat2_1_2 * dt) + (0.5 * dt * (2 * np.pi * 1j)**3 * k * uHat) + uHat) \
+        / (1 - 0.5 * dt * (2 * np.pi * 1j)**3 * k)).real
+    #u[t_idx + 1] = np.fft.ifft((-1j * 1 * np.pi * k * dt * uHat2 + uHat)
+                               #/ (1 - dt * k * 0.1 * (2 * np.pi * 1j)**3)).real
+    
     #if (t_idx % 10 == 0):
         #plt.plot(x, u[t_idx])
         #plt.ylim([0, 1.0101])
@@ -100,10 +87,11 @@ for t_idx in trange(N_t - 1, leave = False):
     energy.append(np.trapz(u[t_idx + 1]**2, x, dx))
     pass
 
-x1,x2,y1,y2 = plt.axis()
+#x1,x2,y1,y2 = plt.axis()
 #plt.axis((0.0,0.08,0.12,0.13))
 plt.plot(t, np.abs(np.array(energy)))
-#plt.savefig('Energy1e-7.png')
+#print(energy)
+plt.savefig('Energy1e-7.png')
 plt.show()
 print("done")
 # plt.plot(t, np.abs(y - y_anal(t)))
