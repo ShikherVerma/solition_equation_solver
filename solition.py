@@ -56,6 +56,7 @@ uHat = np.fft.fft(u[0])
 k    = np.fft.fftfreq(N_x, d=(1 / N_x))
 
 energy = [np.trapz(u[0]**2, x, dx)]
+nu = 0.15
 # k1 = f(t[0], uHat, k)
 # plt.plot(x, k1)
 for t_idx in trange(N_t - 1, leave = False):
@@ -63,36 +64,53 @@ for t_idx in trange(N_t - 1, leave = False):
     uHat      = np.fft.fft(u[t_idx])
     uHat2     = np.fft.fft(u[t_idx]**2)
     uHat_1_2  = (uHat - ((2 * np.pi * 1j / 2) * k * uHat2 * 0.5 * dt)) \
-                 / (1 - 0.5 * dt * (2 * np.pi * 1j)**3 * k)
+                 / (1 - 0.5 * dt * (2 * np.pi * 1j)**3 * k * nu)
     u_1_2     = np.fft.ifft(uHat_1_2)
     uHat2_1_2 = np.fft.fft(u_1_2**2)
     
-    u[t_idx + 1] = np.fft.ifft(((-2 * np.pi * 1j * k * uHat2_1_2 * dt) + (0.5 * dt * (2 * np.pi * 1j)**3 * k * uHat) + uHat) \
-        / (1 - 0.5 * dt * (2 * np.pi * 1j)**3 * k)).real
-    #u[t_idx + 1] = np.fft.ifft((-1j * 1 * np.pi * k * dt * uHat2 + uHat)
-                               #/ (1 - dt * k * 0.1 * (2 * np.pi * 1j)**3)).real
+    u[t_idx + 1] = np.fft.ifft(((-1 * np.pi * 1j * k * uHat2_1_2 * dt) + (0.5 * dt * (2 * np.pi * 1j)**3 * k * nu * uHat) + uHat) \
+        / (1 - 0.5 * dt * (2 * np.pi * 1j)**3 * k * nu)).real
     
-    #if (t_idx % 10 == 0):
-        #plt.plot(x, u[t_idx])
+    if (t_idx % 10 == 0):
+        plt.plot(x, u[t_idx])
+        plt.ylim([0, 1.0101])
+        plt.xlim([0, 1.])
+        plt.xlabel("$x$")
+        plt.ylabel("$u$")
+        #plt.title('$\mathrm{Time}\; \mathrm{evolution}\; \mathrm{of}\; u = e^{(x - 0.5)^2 / 0.025^2}$')
+        plt.title(r'Time = ' + str(t[t_idx]))
+        plt.savefig('rho' + '%05d'%t_idx + '.png')
+        #plt.show()
+        plt.clf()
+        
+    #if ((t[t_idx] == 0.01) | 
+        #(t[t_idx] == 0.016) |
+        #(t[t_idx] == 0.02) |
+        #(t[t_idx] == 0.025) |
+        #(t[t_idx] == 0.030) |
+        #(t[t_idx] == 0.035) |
+        #(t[t_idx] == 0.040) |
+        #(t[t_idx] == 0.045)):
+        #plt.plot(x, u[t_idx], color = 'b')
         #plt.ylim([0, 1.0101])
         #plt.xlim([0, 1.])
         #plt.xlabel("$x$")
         #plt.ylabel("$u$")
-        ##plt.title('$\mathrm{Time}\; \mathrm{evolution}\; \mathrm{of}\; u = e^{(x - 0.5)^2 / 0.025^2}$')
-        #plt.title(r'Time = ' + str(t[t_idx]))
-        #plt.savefig('rho' + '%05d'%t_idx + '.png')
-        ##plt.show()
-        #plt.clf()
+        #plt.title(r'$\mathrm{Time}\; \mathrm{evolution}\; \mathrm{of}\; u = e^{(x - 0.5)^2 / 0.1^2}, \nu = 0.05$')
+    
     #print("plot {}".format(t_idx))
     energy.append(np.trapz(u[t_idx + 1]**2, x, dx))
     pass
 
-#x1,x2,y1,y2 = plt.axis()
-#plt.axis((0.0,0.08,0.12,0.13))
-plt.plot(t, np.abs(np.array(energy)))
-#print(energy)
-plt.savefig('Energy1e-7.png')
-plt.show()
-print("done")
+#plt.ylim([0, 0.14])
+##plt.xlim([0, 1.])
+#plt.xlabel("$t$")
+#plt.ylabel("$E$")
+#plt.plot(t, np.abs(np.array(energy)))
+#plt.title(r'$\mathrm{Time}\; \mathrm{evolution}\; \mathrm{of}\; \mathrm{Energy}\; \mathrm{initial}\; \mathrm{wave}\; u_0 = e^{(x - 0.5)^2 / 0.1^2}, \nu = 0.05$')
+#plt.savefig('energy_05.jpg')
+##plt.savefig('time_evol_05.jpg')
+#plt.show()
+#print("done")
 # plt.plot(t, np.abs(y - y_anal(t)))
 # plt.plot(t, y_anal(t))
